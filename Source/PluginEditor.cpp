@@ -72,7 +72,6 @@ SnapTuneEditor::SnapTuneEditor (SnapTuneProcessor& p)
     : AudioProcessorEditor (&p), proc (p)
 {
     setLookAndFeel (&look);
-    setSize (960, 640);
 
     histDet.fill (std::nanf (""));
     histTgt.fill (std::nanf (""));
@@ -112,6 +111,7 @@ SnapTuneEditor::SnapTuneEditor (SnapTuneProcessor& p)
 
     speed.slider.setTooltip ("0 ms = hard-tune / robotic effect. Higher = more natural.");
 
+    setSize (960, 640);          // last: this triggers resized(), which needs every child to exist
     startTimerHz (30);
 }
 
@@ -149,6 +149,10 @@ void SnapTuneEditor::addCombo (juce::ComboBox& c, std::unique_ptr<ComboAtt>& att
 //==============================================================================
 void SnapTuneEditor::resized()
 {
+    for (auto& nb : noteButtons)
+        if (nb == nullptr)
+            return;
+
     auto r = getLocalBounds().reduced (20);
     auto top = r.removeFromTop (40);
     top.removeFromLeft (150);                       // title is painted
