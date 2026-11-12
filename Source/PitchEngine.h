@@ -48,7 +48,8 @@ public:
 
     void prepare (double sampleRate, float minHz)
     {
-        fs = sampleRate;
+        ready = false;
+        fs = sampleRate > 1000.0 ? sampleRate : 44100.0;
 
         // --- detector (decimated) ---
         dec = std::max (1, (int) std::lround (fs / 24000.0));
@@ -76,6 +77,7 @@ public:
 
         setMinFreq (minHz);
         reset();
+        ready = true;
     }
 
     // Lowest voice frequency we will track. Sets latency (lower = more latency).
@@ -135,6 +137,9 @@ public:
     // One sample in, one sample out (delayed by getLatency()).
     float process (float in)
     {
+        if (! ready)                       // host called process before prepare(): pass audio through
+            return in;
+
         x[(size_t) (n & ringMask)] = in;
 
         dAcc += in;
@@ -448,6 +453,7 @@ private:
 
     // ------------------------------------------------------------------ state
     Settings cfg;
+    bool ready = false;
     double fs = 44100.0, fd = 22050.0, hopSeconds = 0.005;
     int dec = 2, tauMin = 20, tauMax = 300, tauMaxWorst = 400, W = 440, hopDec = 110;
     int pCap = 600, lat = 1000;
