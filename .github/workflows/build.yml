@@ -6,12 +6,12 @@ on:
 
 jobs:
   windows:
-    runs-on: windows-latest
+    runs-on: windows-2022
     steps:
       - uses: actions/checkout@v4
 
       - name: Configure
-        run: cmake -S . -B build -G "Visual Studio 17 2022" -A x64
+        run: cmake -S . -B build
 
       - name: Build
         run: cmake --build build --config Release --parallel
@@ -20,8 +20,9 @@ jobs:
         shell: bash
         run: |
           mkdir -p dist
-          cp -r build/SnapTune_artefacts/Release/VST3/SnapTune.vst3 dist/
-          cp -r build/SnapTune_artefacts/Release/Standalone/SnapTune.exe dist/ || true
+          find build -name "SnapTune.vst3" -type d -exec cp -r {} dist/ \;
+          find build -name "SnapTune.exe" -exec cp {} dist/ \;
+          ls -R dist | head -40
 
       - uses: actions/upload-artifact@v4
         with:
